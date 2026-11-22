@@ -7,7 +7,8 @@
     "start": "node server.js",
     "prepare:research": "bash scripts/prepare-research.sh",
     "start:agents-staging": "node server-render-ai.mjs",
-    "test:agents-staging": "node --test vendor/cryptojuju-charts/backtest/agents/render-plan.test.mjs vendor/cryptojuju-charts/backtest/agents/render-runtime.test.mjs vendor/cryptojuju-charts/backtest/agents/render-api.test.mjs vendor/cryptojuju-charts/backtest/agents/render-knowledge.test.mjs"
+    "test:agents-staging": "node --test vendor/cryptojuju-charts/backtest/agents/render-plan.test.mjs vendor/cryptojuju-charts/backtest/agents/render-runtime.test.mjs vendor/cryptojuju-charts/backtest/agents/render-api.test.mjs vendor/cryptojuju-charts/backtest/agents/render-knowledge.test.mjs vendor/cryptojuju-charts/backtest/agents/render-db-readiness.test.mjs",
+    "check:db-staging": "node vendor/cryptojuju-charts/backtest/agents/render/db-readiness.mjs"
   },
   "engines": {
     "node": ">=18"
