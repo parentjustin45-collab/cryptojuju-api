@@ -14,6 +14,20 @@ jobs:
   real-integration-safe-off:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: cj_dev
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: cj_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cj_dev -d cj_dev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,6 +39,10 @@ jobs:
         run: npm run prepare:research
       - name: Research scheduler/API/ledger/knowledge unit gates
         run: npm run test:agents-staging
+      - name: Real PostgreSQL 18 persistence using test-only local credentials
+        run: node vendor/cryptojuju-charts/backtest/agents/render/postgres-smoke.mjs
+        env:
+          DATABASE_URL: postgres://cj_dev:ci_only_password@localhost:5432/cj_dev
       - name: Synthetic Bitunix proxy integration over a real Express HTTP server
         run: node vendor/cryptojuju-charts/backtest/agents/render/integration-smoke.mjs
         env:
