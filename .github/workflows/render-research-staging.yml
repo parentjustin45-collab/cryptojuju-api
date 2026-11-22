@@ -1,0 +1,60 @@
+name: DEV CryptoJuju Render research integration
+on:
+  push:
+    branches: [dev/render-ai-agents]
+    paths:
+      - 'server-render-ai.mjs'
+      - 'scripts/**'
+      - 'package.json'
+      - '.github/workflows/render-research-staging.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-integration-safe-off:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install API dependencies
+        run: npm install --no-audit --no-fund
+      - name: Fetch the exact reviewed CryptoJuju research commit
+        run: npm run prepare:research
+      - name: Research scheduler/API/ledger/knowledge unit gates
+        run: npm run test:agents-staging
+      - name: Synthetic Bitunix proxy integration over a real Express HTTP server
+        run: node vendor/cryptojuju-charts/backtest/agents/render/integration-smoke.mjs
+        env:
+          CJ_AGENT_RUNTIME_ENABLED: '0'
+      - name: Start the ACTUAL combined API entrypoint with agents disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CJ_AGENT_RUNTIME_ENABLED=0 PORT=18888
+          node server-render-ai.mjs > /tmp/cj-api-staging.log 2>&1 &
+          child=$!
+          trap 'kill "$child" 2>/dev/null || true' EXIT
+          ok=0
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18888/healthz >/dev/null; then ok=1; break; fi
+            sleep 0.3
+          done
+          if [ "$ok" -ne 1 ]; then
+            cat /tmp/cj-api-staging.log
+            exit 1
+          fi
+          node --input-type=module -e '
+            import assert from "node:assert/strict";
+            const base="http://127.0.0.1:18888";
+            const root=await (await fetch(base+"/")).json();
+            assert.equal(root.version,"1.1.0");
+            assert.equal(root.bitunixProxy,"online");
+            const status=await (await fetch(base+"/api/agents/status")).json();
+            assert.equal(status.status,"DISABLED");
+            const reject=await fetch(base+"/api/bitunix/proxy?url="+encodeURIComponent("http://localhost/admin"));
+            assert.equal(reject.status,403);
+            console.log("CJ_STAGING_API_SAFE_OFF PASS");
+          '
