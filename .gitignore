@@ -1,0 +1,5 @@
+# Local-only checkout of the reviewed CryptoJuju research commit
+/vendor/
+node_modules/
+.env
+*.log
