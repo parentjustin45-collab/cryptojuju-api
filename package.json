@@ -4,7 +4,10 @@
   "description": "Backend API for CryptoJuju Charts",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "prepare:research": "bash scripts/prepare-research.sh",
+    "start:agents-staging": "node server-render-ai.mjs",
+    "test:agents-staging": "node --test vendor/cryptojuju-charts/backtest/agents/render-plan.test.mjs vendor/cryptojuju-charts/backtest/agents/render-runtime.test.mjs vendor/cryptojuju-charts/backtest/agents/render-api.test.mjs vendor/cryptojuju-charts/backtest/agents/render-knowledge.test.mjs"
   },
   "engines": {
     "node": ">=18"
