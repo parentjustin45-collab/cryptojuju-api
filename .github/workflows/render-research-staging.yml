@@ -40,6 +40,10 @@ jobs:
         run: npm run prepare:research
       - name: Research scheduler/API/ledger/knowledge unit gates
         run: npm run test:agents-staging
+      - name: Read-only database readiness probe never prints credentials
+        run: npm run check:db-staging
+        env:
+          DATABASE_URL: postgres://cj_dev:ci_only_password@localhost:5432/cj_dev
       - name: Real PostgreSQL 18 persistence using test-only local credentials
         run: node vendor/cryptojuju-charts/backtest/agents/render/postgres-smoke.mjs
         env:
@@ -52,7 +56,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export CJ_AGENT_RUNTIME_ENABLED=0 PORT=18888
+          export CJ_AGENT_RUNTIME_ENABLED=0 CJ_AGENT_DB_PREFLIGHT=1 PORT=18888
+          export DATABASE_URL=postgres://cj_dev:ci_only_password@localhost:5432/cj_dev
           node server-render-ai.mjs > /tmp/cj-api-staging.log 2>&1 &
           child=$!
           trap 'kill "$child" 2>/dev/null || true' EXIT
@@ -65,6 +70,7 @@ jobs:
             cat /tmp/cj-api-staging.log
             exit 1
           fi
+          grep -q 'CJ_DB_PREFLIGHT {"status":"READY_FOR_SCHEMA_INITIALIZATION"' /tmp/cj-api-staging.log
           node --input-type=module -e '
             import assert from "node:assert/strict";
             const base="http://127.0.0.1:18888";
