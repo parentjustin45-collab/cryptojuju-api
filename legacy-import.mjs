@@ -27,7 +27,9 @@ async function checkOidc(jwt,{fetchImpl=globalThis.fetch,now=Date.now()}={}){
   const t=Math.floor(now/1000);
   if(claims.iss!=='https://token.actions.githubusercontent.com')throw Error('AUTH_ISSUER');
   if(claims.aud!==AUD)throw Error('AUTH_AUDIENCE');
-  if(claims.sub!=='repo:parentjustin45-collab/Cryptojuju-charts:ref:refs/heads/dev/ai-agents-phase1')throw Error('AUTH_SUBJECT');
+  // GitHub permits customized `sub` templates. The signed repository, exact
+  // branch, exact workflow, audience and event claims below remain mandatory.
+  if(typeof claims.sub!=='string'||claims.sub.length<5)throw Error('AUTH_SUBJECT');
   if(claims.repository!=='parentjustin45-collab/Cryptojuju-charts')throw Error('AUTH_REPOSITORY');
   if(claims.ref!=='refs/heads/dev/ai-agents-phase1')throw Error('AUTH_BRANCH');
   if(claims.workflow_ref!=='parentjustin45-collab/Cryptojuju-charts/.github/workflows/cj-legacy-import.yml@refs/heads/dev/ai-agents-phase1')throw Error('AUTH_WORKFLOW');
