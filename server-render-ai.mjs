@@ -10,7 +10,10 @@ import {probeDatabase} from './vendor/cryptojuju-charts/backtest/agents/render/d
 
 await startCombinedServer({createApp:async()=>{
   const combined=await createIntegratedApp();
-  registerLegacyImport(combined.app,express);
+  // Historical migration completed on 2026-11-24. Closed by default.
+  // Reopening requires an explicit environment flag and a redeploy.
+  if(process.env.CJ_LEGACY_IMPORT_ENABLED==='1')
+    registerLegacyImport(combined.app,express);
   return combined;
 }});
 if(process.env.CJ_AGENT_DB_PREFLIGHT==='1'){
