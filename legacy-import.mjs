@@ -173,7 +173,11 @@ export function registerLegacyImport(app,express){
       if(!authorization.startsWith('Bearer '))throw Error('AUTH_MISSING');
       await checkOidc(authorization.slice(7));
       next();
-    }catch(e){return res.status(403).json({error:'NOT_AUTHORIZED'});}
+    }catch(e){
+      // Diagnostic code only. Never log bearer tokens, OIDC claims or credentials.
+      console.error('CJ_LEGACY_AUTH_REJECTED '+String(e?.message??e).slice(0,80));
+      return res.status(403).json({error:'NOT_AUTHORIZED'});
+    }
   },express.raw({type:'application/octet-stream',limit:'5mb'}),async(req,res)=>{
     res.set('cache-control','no-store');
     try{
