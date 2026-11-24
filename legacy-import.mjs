@@ -25,17 +25,16 @@ async function checkOidc(jwt,{fetchImpl=globalThis.fetch,now=Date.now()}={}){
   const header=decode(parts[0]),claims=decode(parts[1]);
   if(header.alg!=='RS256'||typeof header.kid!=='string')throw Error('AUTH_ALGORITHM');
   const t=Math.floor(now/1000);
-  if(claims.iss!=='https://token.actions.githubusercontent.com'||
-    claims.aud!==AUD||
-    claims.sub!=='repo:parentjustin45-collab/Cryptojuju-charts:ref:refs/heads/dev/ai-agents-phase1'||
-    claims.repository!=='parentjustin45-collab/Cryptojuju-charts'||
-    claims.ref!=='refs/heads/dev/ai-agents-phase1'||
-    claims.workflow_ref!=='parentjustin45-collab/Cryptojuju-charts/.github/workflows/cj-legacy-import.yml@refs/heads/dev/ai-agents-phase1'||
-    claims.event_name!=='push'||
-    !Number.isInteger(claims.exp)||claims.exp<t||
+  if(claims.iss!=='https://token.actions.githubusercontent.com')throw Error('AUTH_ISSUER');
+  if(claims.aud!==AUD)throw Error('AUTH_AUDIENCE');
+  if(claims.sub!=='repo:parentjustin45-collab/Cryptojuju-charts:ref:refs/heads/dev/ai-agents-phase1')throw Error('AUTH_SUBJECT');
+  if(claims.repository!=='parentjustin45-collab/Cryptojuju-charts')throw Error('AUTH_REPOSITORY');
+  if(claims.ref!=='refs/heads/dev/ai-agents-phase1')throw Error('AUTH_BRANCH');
+  if(claims.workflow_ref!=='parentjustin45-collab/Cryptojuju-charts/.github/workflows/cj-legacy-import.yml@refs/heads/dev/ai-agents-phase1')throw Error('AUTH_WORKFLOW');
+  if(claims.event_name!=='push')throw Error('AUTH_EVENT');
+  if(!Number.isInteger(claims.exp)||claims.exp<t||
     !Number.isInteger(claims.iat)||claims.iat>t+60||
-    (Number.isInteger(claims.nbf)&&claims.nbf>t+60))
-    throw Error('AUTH_CLAIMS');
+    (Number.isInteger(claims.nbf)&&claims.nbf>t+60))throw Error('AUTH_TOKEN_TIME');
   if(!jwksCache||now-jwksFetchedAt>3600000){
     const response=await fetchImpl('https://token.actions.githubusercontent.com/.well-known/jwks',{
       signal:AbortSignal.timeout(7000),
