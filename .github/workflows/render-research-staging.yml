@@ -40,6 +40,8 @@ jobs:
         run: npm run prepare:research
       - name: Research scheduler/API/ledger/knowledge unit gates
         run: npm run test:agents-staging
+      - name: Historical import endpoint denies unsigned uploads
+        run: node --test scripts/legacy-import.test.mjs
       - name: Read-only database readiness probe never prints credentials
         run: npm run check:db-staging
         env:
