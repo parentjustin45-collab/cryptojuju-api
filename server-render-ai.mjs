@@ -17,6 +17,18 @@ process.env.CJ_OLDER_HISTORY_ENABLED=process.env.CJ_OLDER_HISTORY_ENABLED??'1';
 process.env.CJ_AUTONOMOUS_EXPERIMENTS_ENABLED=process.env.CJ_AUTONOMOUS_EXPERIMENTS_ENABLED??'1';
 // Approved independent Binance public archive ingestion; no orders.
 process.env.CJ_BINANCE_ARCHIVES_ENABLED=process.env.CJ_BINANCE_ARCHIVES_ENABLED??'1';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+if(process.env.CJ_AGENT_RUNTIME_ENABLED==='1'&&process.env.DATABASE_URL){
+ const path=fileURLToPath(new URL('./vendor/cryptojuju-charts/backtest/agents/render/streaming-frozen-audit.mjs',import.meta.url));
+ console.log('CJ_FROZEN_STREAM_AUDIT_START');
+ await new Promise(resolve=>{
+ const child=spawn(process.execPath,['--max-old-space-size=256',path],{stdio:['ignore','inherit','inherit']});
+ const timer=setTimeout(()=>child.kill('SIGKILL'),180000);
+ child.once('error',()=>{clearTimeout(timer);console.error('CJ_FROZEN_STREAM_AUDIT_SPAWN_FAILED');resolve()});
+ child.once('close',(code,signal)=>{clearTimeout(timer);console.log('CJ_FROZEN_STREAM_AUDIT_EXIT '+JSON.stringify({code,signal}));resolve()});
+ });
+}
 await startCombinedServer({createApp:async()=>{
   const combined=await createIntegratedApp();
   // Historical migration completed on 2026-11-24. Closed by default.
