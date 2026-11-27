@@ -15,6 +15,8 @@ console.log('CJ_STORAGE_POLICY '+JSON.stringify({configuredBudgetBytes:100000000
 // Approved 2026-11-27: bounded, research-only tasks; no live trading.
 process.env.CJ_OLDER_HISTORY_ENABLED=process.env.CJ_OLDER_HISTORY_ENABLED??'1';
 process.env.CJ_AUTONOMOUS_EXPERIMENTS_ENABLED=process.env.CJ_AUTONOMOUS_EXPERIMENTS_ENABLED??'1';
+// Approved independent Binance public archive ingestion; no orders.
+process.env.CJ_BINANCE_ARCHIVES_ENABLED=process.env.CJ_BINANCE_ARCHIVES_ENABLED??'1';
 await startCombinedServer({createApp:async()=>{
   const combined=await createIntegratedApp();
   // Historical migration completed on 2026-11-24. Closed by default.
