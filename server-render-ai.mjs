@@ -38,3 +38,24 @@ if(process.env.CJ_AGENT_DB_PREFLIGHT==='1'){
   if(result.status!=='READY_FOR_SCHEMA_INITIALIZATION')
     console.error('CJ_DB_PREFLIGHT_BLOCKED '+result.code);
 }
+
+ // Private Render logs only: read the first verified Level 4 report without exposing a public endpoint.
+ if(process.env.CJ_LLM_RESEARCH_ENABLED==='1'&&process.env.DATABASE_URL){
+   let pool;
+   try{
+     const {default:pg}=await import('pg');
+     const {createHash}=await import('node:crypto');
+     const {validateProposal}=await import('./vendor/cryptojuju-charts/backtest/agents/render/llm-research.mjs');
+     pool=new pg.Pool({connectionString:process.env.DATABASE_URL,max:1,connectionTimeoutMillis:5000,statement_timeout:5000,options:'-c default_transaction_read_only=on'});
+     const q=await pool.query("SELECT trim(result_sha256) AS sha,result FROM cj_llm_research_attempts WHERE status='HUMAN_REVIEW_ONLY' AND result_sha256=$1 LIMIT 1",['bc1628f43adcdd0cc745f31b01c067f2e0d025133ccd6c1b430edbd2699ca12c']);
+     if(q.rows.length===1){
+       const row=q.rows[0];
+       if(createHash('sha256').update(row.result).digest('hex')!==row.sha)throw Error('HASH_MISMATCH');
+       const r=JSON.parse(row.result);
+       if(r.noPromotion!==true||r.noTrading!==true||r.noExecution!==true)throw Error('REPORT_POLICY');
+       const proposal=validateProposal(r.proposal);
+       console.log('CJ_LLM_FIRST_REVIEW '+JSON.stringify({sha:row.sha,source:r.source,channel:r.channel,proposal,usage:r.usage,estimatedMicroUsd:r.estimatedMicroUsd}));
+     }else console.log('CJ_LLM_FIRST_REVIEW_NOT_FOUND');
+   }catch{console.error('CJ_LLM_FIRST_REVIEW_BLOCKED');}
+   finally{if(pool)try{await pool.end();}catch{/* no secret logging */}}
+ }
