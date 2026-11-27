@@ -12,6 +12,9 @@ import {probeDatabase} from './vendor/cryptojuju-charts/backtest/agents/render/d
 // Decimal GB is deliberately conservative even if provisioned storage is binary.
 process.env.CJ_ARCHIVE_DISK_BUDGET_BYTES='10000000000';
 console.log('CJ_STORAGE_POLICY '+JSON.stringify({configuredBudgetBytes:10000000000,thresholdBytes:7000000000,logicalOnly:true}));
+// Approved 2026-11-27: bounded, research-only tasks; no live trading.
+process.env.CJ_OLDER_HISTORY_ENABLED=process.env.CJ_OLDER_HISTORY_ENABLED??'1';
+process.env.CJ_AUTONOMOUS_EXPERIMENTS_ENABLED=process.env.CJ_AUTONOMOUS_EXPERIMENTS_ENABLED??'1';
 await startCombinedServer({createApp:async()=>{
   const combined=await createIntegratedApp();
   // Historical migration completed on 2026-11-24. Closed by default.
