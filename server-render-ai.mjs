@@ -19,6 +19,10 @@ process.env.CJ_AUTONOMOUS_EXPERIMENTS_ENABLED=process.env.CJ_AUTONOMOUS_EXPERIME
 process.env.CJ_BINANCE_ARCHIVES_ENABLED=process.env.CJ_BINANCE_ARCHIVES_ENABLED??'1';
 // Approved bounded evidence-driven follow-up research, no paid model or promotion.
 process.env.CJ_ADAPTIVE_RESEARCH_ENABLED=process.env.CJ_ADAPTIVE_RESEARCH_ENABLED??'1';
+// Level 4 dry-run only. Paid calls and evidence export require a separate approval.
+process.env.CJ_LLM_RESEARCH_ENABLED='0';
+process.env.CJ_LLM_EVIDENCE_EXPORT_APPROVED='0';
+process.env.CJ_LLM_DRY_RUN_ENABLED='1';
 await startCombinedServer({createApp:async()=>{
   const combined=await createIntegratedApp();
   // Historical migration completed on 2026-11-24. Closed by default.
