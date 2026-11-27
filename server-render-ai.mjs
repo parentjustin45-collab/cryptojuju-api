@@ -8,6 +8,10 @@ import {registerLegacyImport} from './legacy-import.mjs';
 import express from 'express';
 import {probeDatabase} from './vendor/cryptojuju-charts/backtest/agents/render/db-readiness.mjs';
 
+// Render PostgreSQL disk independently confirmed at 10 GB on 2026-11-27.
+// Decimal GB is deliberately conservative even if provisioned storage is binary.
+process.env.CJ_ARCHIVE_DISK_BUDGET_BYTES='10000000000';
+console.log('CJ_STORAGE_POLICY '+JSON.stringify({configuredBudgetBytes:10000000000,thresholdBytes:7000000000,logicalOnly:true}));
 await startCombinedServer({createApp:async()=>{
   const combined=await createIntegratedApp();
   // Historical migration completed on 2026-11-24. Closed by default.
