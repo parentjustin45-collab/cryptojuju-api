@@ -8,6 +8,22 @@ import {registerLegacyImport} from './legacy-import.mjs';
 import express from 'express';
 import {probeDatabase} from './vendor/cryptojuju-charts/backtest/agents/render/db-readiness.mjs';
 
+// Temporary audit release: isolated child, read-only database transaction.
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+
+if(process.env.CJ_AGENT_RUNTIME_ENABLED==='1' && process.env.DATABASE_URL){
+  const auditPath=fileURLToPath(new URL('./vendor/cryptojuju-charts/backtest/agents/render/historical-final-audit.mjs',import.meta.url));
+  console.log('CJ_FINAL_LIBRARY_AUDIT_START 2026-11-27');
+  await new Promise(resolve=>{
+    const child=spawn(process.execPath,['--max-old-space-size=192',auditPath],{
+      stdio:['ignore','inherit','inherit'],env:process.env
+    });
+    const timer=setTimeout(()=>{console.error('CJ_FINAL_LIBRARY_AUDIT_TIMEOUT');child.kill('SIGKILL');},120000);
+    child.once('error',()=>{clearTimeout(timer);console.error('CJ_FINAL_LIBRARY_AUDIT_SPAWN_FAILED');resolve();});
+    child.once('close',(code,signal)=>{clearTimeout(timer);console.log('CJ_FINAL_LIBRARY_AUDIT_EXIT '+JSON.stringify({code,signal}));resolve();});
+  });
+}
 await startCombinedServer({createApp:async()=>{
   const combined=await createIntegratedApp();
   // Historical migration completed on 2026-11-24. Closed by default.

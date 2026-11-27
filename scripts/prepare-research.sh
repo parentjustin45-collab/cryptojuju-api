@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # Pin the exact audited development commit, never follow the moving branch at startup.
-CHARTS_COMMIT="9e5e5cc9e277167533145b3f3c669b93334e29af"
+CHARTS_COMMIT="6e66461ea791efc1b387acfdf99bfcc0558307b6"
 REPO_URL="https://github.com/parentjustin45-collab/Cryptojuju-charts.git"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="$ROOT/vendor/cryptojuju-charts"
@@ -20,3 +20,5 @@ fi
 git -C "$TARGET" -c advice.detachedHead=false checkout -q --force --detach FETCH_HEAD
 npm install --prefix "$TARGET/backtest/agents/render" --no-audit --no-fund
 echo "CJ research source pinned: $ACTUAL"
+
+node --check "$TARGET/backtest/agents/render/historical-final-audit.mjs"
