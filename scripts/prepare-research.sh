@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # Pin the exact audited development commit, never follow the moving branch at startup.
-CHARTS_COMMIT="56e26383f448d56949113bea581b5694520cf4ea"
+CHARTS_COMMIT="08ad5ba4214b18ed4bda296d24de0e1a056616ff"
 REPO_URL="https://github.com/parentjustin45-collab/Cryptojuju-charts.git"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="$ROOT/vendor/cryptojuju-charts"
@@ -76,3 +76,7 @@ node --test "$TARGET/backtest/agents/render/level6-expansion-worker.test.mjs"
 
 node --check "$TARGET/backtest/agents/render/level6-cross-exchange.mjs"
 node --test "$TARGET/backtest/agents/render/level6-cross-exchange.test.mjs"
+
+node --check "$TARGET/backtest/agents/render/level6-advanced-features.mjs"
+node --check "$TARGET/backtest/agents/render/level6-advanced-pilot.mjs"
+node --test "$TARGET/backtest/agents/render/level6-advanced-features.test.mjs"
